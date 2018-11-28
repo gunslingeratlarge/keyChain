@@ -1,10 +1,5 @@
 package blc
 
-import (
-	"fmt"
-	"time"
-)
-
 // Blockchain 区块链结构体
 type Blockchain struct {
 	Blocks []*Block
@@ -19,7 +14,6 @@ func CreateBlockChain() *Blockchain {
 
 // AppendBlock 向该区块链中添加新的区块，只需传入该区块中需存的数据，其他都会自动handle好
 func (bc *Blockchain) AppendBlock(data string) {
-	fmt.Println("time", time.Now().Unix())
-	var len int = len(bc.Blocks)
+	len := len(bc.Blocks)
 	bc.Blocks = append(bc.Blocks, CreateNewBlock(bc.Blocks[len-1].Height+1, data, bc.Blocks[len-1].Hash))
 }

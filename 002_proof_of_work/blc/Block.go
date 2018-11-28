@@ -1,9 +1,9 @@
 package blc
 
-import "time"
-
-import "bytes"
-import "crypto/sha256"
+import (
+	"fmt"
+	"time"
+)
 
 // Block 区块数据结构
 type Block struct {
@@ -17,22 +17,18 @@ type Block struct {
 	Hash []byte
 	// 时间戳：区块生成的时间
 	timeStamp int64
-}
-
-func (b *Block) setHash() {
-	heightBytes := IntToByteSlice(b.Height)
-	timeBytes := IntToByteSlice(b.timeStamp)
-	blockBytes := bytes.Join([][]byte{b.data, heightBytes, timeBytes, b.PrevHash}, []byte{'-'})
-	// 返回的是固定长度32的数组
-	hash := sha256.Sum256(blockBytes)
-	//取切片并赋给hash
-	b.Hash = hash[:]
+	// 随机数
+	Nonce int
 }
 
 // CreateNewBlock 创建新的区块： 将这个方法绑定到Block类型上
 func CreateNewBlock(height int64, data string, prevHash []byte) *Block {
 
-	block := &Block{height, []byte(data), prevHash, nil, time.Now().UnixNano()}
-	block.setHash()
+	block := &Block{height, []byte(data), prevHash, nil, time.Now().UnixNano(), 0}
+	pow := NewProofOfWork(block)
+	hash, nonce := pow.Run()
+	block.Nonce = nonce
+	block.Hash = hash
+	fmt.Printf("%x\n", hash)
 	return block
 }

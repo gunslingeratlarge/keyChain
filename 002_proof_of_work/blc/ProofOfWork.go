@@ -13,7 +13,7 @@ type ProofOfWork struct {
 	target *big.Int
 }
 
-// NewProofOfWork 创建一个pow对象，该对象可以实现挖矿
+// NewProofOfWork 创建一个pow对象，该对象可以实现挖矿。初始化对象的目标hash值（target）
 func NewProofOfWork(b *Block) *ProofOfWork {
 	pow := ProofOfWork{b, nil}
 	// 0000 0001  d = 2  shift 8 - 2 = 6位
@@ -24,10 +24,10 @@ func NewProofOfWork(b *Block) *ProofOfWork {
 }
 
 //Run 执行挖矿：产出正确的哈希值和nonce
-func (pow *ProofOfWork) Run() ([]byte, int64) {
+func (pow *ProofOfWork) Run() ([]byte, int) {
 	block := pow.block
 
-	var nonce int64
+	var nonce int
 	var hash [32]byte
 	var hashInt big.Int
 	// 循环直到找到正确的nonce为止
@@ -45,13 +45,25 @@ func (pow *ProofOfWork) Run() ([]byte, int64) {
 
 }
 
-func prepareData(b *Block, nonce int64) []byte {
+func prepareData(b *Block, nonce int) []byte {
 	dataJoined := bytes.Join([][]byte{
 		IntToByteSlice(b.Height),
 		b.data,
 		b.PrevHash,
 		IntToByteSlice(b.timeStamp),
-		IntToByteSlice(nonce)}, []byte{'-'})
+		IntToByteSlice(int64(nonce))}, []byte{'-'})
 
 	return dataJoined
+}
+
+// BlockValidate 判断区块的hash是否合法
+func (pow *ProofOfWork) BlockValidate() bool {
+	b := pow.block
+	hash := sha256.Sum256(prepareData(b, b.Nonce))
+	hashInt := new(big.Int).SetBytes(hash[:])
+	if pow.target.Cmp(hashInt) == 1 {
+		return true
+	}
+	return false
+
 }
