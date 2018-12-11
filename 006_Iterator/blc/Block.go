@@ -27,7 +27,7 @@ type Block struct {
 // CreateNewBlock 创建新的区块： 将这个方法绑定到Block类型上
 func CreateNewBlock(height int64, data string, prevHash []byte) *Block {
 
-	block := &Block{height, []byte(data), prevHash, nil, time.Now().UnixNano(), 0}
+	block := &Block{height, []byte(data), prevHash, nil, time.Now().Unix(), 0}
 	pow := NewProofOfWork(block)
 	hash, nonce := pow.Run()
 	block.Nonce = nonce

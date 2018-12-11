@@ -48,7 +48,7 @@ func (pow *ProofOfWork) Run() ([]byte, int) {
 func prepareData(b *Block, nonce int) []byte {
 	dataJoined := bytes.Join([][]byte{
 		IntToByteSlice(b.Height),
-		b.Data,
+		b.HashTransactions(),
 		b.PrevHash,
 		IntToByteSlice(b.TimeStamp),
 		IntToByteSlice(int64(nonce))}, []byte{'-'})

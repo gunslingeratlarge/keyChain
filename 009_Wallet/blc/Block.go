@@ -2,6 +2,7 @@ package blc
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/gob"
 	"fmt"
 	"log"
@@ -12,8 +13,10 @@ import (
 type Block struct {
 	// 当前区块高度
 	Height int64
-	// 数据
-	Data []byte
+
+	// 当前区块中所打包的交易
+	Txs []*Transaction
+
 	// 前hash
 	PrevHash []byte
 	// 后区块hash
@@ -25,9 +28,9 @@ type Block struct {
 }
 
 // CreateNewBlock 创建新的区块： 将这个方法绑定到Block类型上
-func CreateNewBlock(height int64, data string, prevHash []byte) *Block {
+func CreateNewBlock(height int64, txs []*Transaction, prevHash []byte) *Block {
 
-	block := &Block{height, []byte(data), prevHash, nil, time.Now().UnixNano(), 0}
+	block := &Block{height, txs, prevHash, nil, time.Now().Unix(), 0}
 	pow := NewProofOfWork(block)
 	hash, nonce := pow.Run()
 	block.Nonce = nonce
@@ -61,6 +64,19 @@ func DeserializeBlock(blockBytes []byte) *Block {
 	if err != nil {
 		log.Panic(err)
 	}
-
 	return &block
+}
+
+// 需要将Txs转换成[]byte (拼接所有交易的hash然后再做sha256）
+func (block *Block) HashTransactions() []byte {
+	var txHashes [][]byte
+	var txHash [32]byte
+
+	for _, tx := range block.Txs {
+		txHashes = append(txHashes, tx.TxHash)
+	}
+	txHash = sha256.Sum256(bytes.Join(txHashes, []byte{}))
+
+	return txHash[:]
+
 }
